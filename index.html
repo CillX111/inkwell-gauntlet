@@ -191,7 +191,7 @@ function bulletShape(g,kind,col,r){
    SAVE SYSTEM — this browser always; the viewer's account when available
    ========================================================= */
 const SAVE_KEY='inkwell-gauntlet-save-v1';
-function defaultSave(){return{v:1,coins:0,owned:['pencil'],equip:{w1:'pencil',w2:null,charm:null},clears:{},eggs:{},expert:false,deaths:0,settings:{sound:true,autofire:false},updated:0}}
+function defaultSave(){return{v:1,coins:0,owned:['pencil'],equip:{w1:'pencil',w2:null,charm:null},clears:{},eggs:{},lv:{},expert:false,deaths:0,settings:{sound:true,autofire:false},updated:0}}
 function normalize(s){const d=defaultSave();if(!s||typeof s!=='object')return d;const o=Object.assign(d,s);o.equip=Object.assign(defaultSave().equip,s.equip||{});o.settings=Object.assign(defaultSave().settings,s.settings||{});if(!Array.isArray(o.owned))o.owned=['pencil'];if(!o.owned.includes('pencil'))o.owned.unshift('pencil');return o}
 function readLocal(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&s.v===1)return normalize(s)}catch(e){}return null}
 function writeLocal(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));return true}catch(e){return false}}
@@ -239,8 +239,11 @@ const ITEMS={
   mega:{type:'w',name:'Doom Pencil',cost:0,desc:'SECRET! Melts any boss in seconds. Poke Dot on the title screen again to put it away.'},
   goldnib:{type:'c',name:'Golden Nib',cost:9,desc:'Your shots deal 20% more damage, but you lose 1 hit point.'},
 };
-const SHOP_LIST=['spread','homing','lobber','charge','locket','smoke','coffee','ribbon','spring','goldnib'];
+const SHOP_LIST=['pencil','spread','homing','lobber','charge','locket','smoke','coffee','ribbon','spring','goldnib'];
 const has=id=>save.equip.charm===id;
+const lvl=id=>Math.min(5,(save.lv&&save.lv[id])||1),UP_COST=[0,1,2,3,4];
+const dmgMul=id=>1+(lvl(id)-1)*.25,rateMul=id=>1-(lvl(id)-1)*.0625;
+const lvText=id=>{const L=lvl(id);return `Level ${L}/5: ${dmgMul(id)}x damage, ${Math.round((1/rateMul(id)-1)*100)}% faster.`};
 
 function drawIcon(c,id,x,y,s=1){
   c.save();c.translate(x,y);c.scale(s,s);
@@ -1969,7 +1972,7 @@ function drawPlane(c,p,t){
 /* =========================================================
    PLAYER SHOTS
    ========================================================= */
-function pshot(x,y,a,s,dmg,o={}){F.shots.push(Object.assign({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,dmg:dmg*(has('goldnib')?1.2:1),r:7,kind:'lead',life:1.6,t:0,g:0,bounce:0,home:0,pierce:false,hitDone:false},o))}
+function pshot(x,y,a,s,dmg,o={}){F.shots.push(Object.assign({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,dmg:dmg*(has('goldnib')?1.2:1)*(F.player?dmgMul(F.player.weapons[F.player.wi]):1),r:7,kind:'lead',life:1.6,t:0,g:0,bounce:0,home:0,pierce:false,hitDone:false},o))}
 function fireWeapon(p,id,mx,my,a){
   const air=F.mode==='air';
   switch(id){
@@ -1977,7 +1980,7 @@ function fireWeapon(p,id,mx,my,a){
     case 'mega':for(let k=-1;k<=1;k++)pshot(mx,my,a+k*.25,1300,28,{kind:'mega',r:16,home:16,pierce:true,life:1.6});if(Math.random()<.3)F.shake=Math.max(F.shake,3);break;
     case 'spread':for(let i=-2;i<=2;i++)pshot(mx,my,a+i*.16,820,2.3,{kind:'drop',r:6,life:.3});break;
     case 'homing':p.alt=!p.alt;pshot(mx,my,a+(p.alt?-.45:.45),640,2.7,{kind:'nib',home:7,life:2.2});break;
-    case 'lobber':{const s=air?520:560;F.shots.push({x:mx,y:my,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(air?160:300),g:air?900:1500,bounce:air?0:1,dmg:11.5*(has('goldnib')?1.2:1),r:12,kind:'bomb',life:2.4,t:0,home:0,pierce:false});break}
+    case 'lobber':{const s=air?520:560;F.shots.push({x:mx,y:my,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(air?160:300),g:air?900:1500,bounce:air?0:1,dmg:11.5*(has('goldnib')?1.2:1)*dmgMul('lobber'),r:12,kind:'bomb',life:2.4,t:0,home:0,pierce:false});break}
   }
   SFX.shoot();
 }
@@ -2078,13 +2081,13 @@ class Fight{
     const [mx,my]=this.muzzle();
     if(p.exT<=0&&!(this.mode==='plat'&&p.dashT>0)){
       if(wid==='charge'){
-        if(firing&&!(save.settings.autofire&&p.charge>=.8&&!inp.held('shoot'))){p.charge+=dt}
+        if(firing&&!(save.settings.autofire&&p.charge>=.8&&!inp.held('shoot'))){p.charge+=dt/rateMul('charge')}
         if((!firing&&p.charge>0)||(save.settings.autofire&&!inp.held('shoot')&&p.charge>=.8)){
           const a=Math.atan2(p.aimY,p.aimX);
           if(p.charge>=.8){pshot(mx,my,a,900,44,{kind:'quill',r:22,pierce:true,life:1.4});SFX.ex();this.shake=4}
           else pshot(mx,my,a,1000,3.2,{kind:'quill',r:7});
           SFX.shoot();p.charge=0}
-      }else if(firing&&p.shootCd<=0){p.shootCd=wid==='mega'?.05:wid==='spread'?.13:wid==='homing'?.12:wid==='lobber'?.34:.085;fireWeapon(p,wid,mx,my,Math.atan2(p.aimY,p.aimX))}
+      }else if(firing&&p.shootCd<=0){p.shootCd=(wid==='mega'?.05:wid==='spread'?.13:wid==='homing'?.12:wid==='lobber'?.34:.085)*rateMul(wid);fireWeapon(p,wid,mx,my,Math.atan2(p.aimY,p.aimX))}
     }
     if(inp.hit('ex')&&this.meter>=1&&p.exT<=0){this.meter-=1;this.stats.cards++;p.exT=.28;p.inv=Math.max(p.inv,.4);const a=Math.atan2(p.aimY,p.aimX);
       if(wid==='homing')for(let k=-1;k<=1;k++)pshot(mx,my,a+k*.6,560,12,{kind:'ex',r:14,home:6,pierce:true,life:2.5});
@@ -2153,7 +2156,7 @@ class Fight{
     for(let i=0;i<5;i++){const x=102+i*22,y=H-52,f=clamp(this.meter-i,0,1);wrect(c,x,y,17,26,i+9,1);c.fillStyle='rgba(239,226,194,.25)';c.fill();
       if(f>0){c.save();wrect(c,x,y,17,26,i+9,1);c.clip();c.fillStyle=f>=1?'#f7d26a':'#c9a24a';c.fillRect(x,y+26*(1-f),17,26*f);c.restore()}
       wrect(c,x,y,17,26,i+9,1);inkStroke(c,2.5);if(f>=1){star(c,x+8.5,y+13,6,2.6,5,-Math.PI/2,i);c.fillStyle=RED;c.fill()}}
-    const wid=p.weapons[p.wi];drawIcon(c,wid,232,H-38,.8);txt(c,ITEMS[wid].name,252,H-38,14,CREAM,'left',FB,true,4);
+    const wid=p.weapons[p.wi];drawIcon(c,wid,232,H-38,.8);txt(c,ITEMS[wid].name+(lvl(wid)>1?' Lv'+lvl(wid):''),252,H-38,14,CREAM,'left',FB,true,4);
     if(p.weapons.length>1)txt(c,'(E) swap',252,H-20,11,'#d8c8a2','left',FB,true,3);
     txt(c,this.def.name,W-18,24,18,CREAM,'right');
     {const B=this.boss,pr=clamp(1-B.hp/B.maxHp,0,1),bw=400,bx=W/2-bw/2,by=10,bh=16;
@@ -2313,7 +2316,11 @@ class Shop{
     if(inp.hit('back')&&!inp.hit('confirm')){go(new MapScene());return}
     if(inp.hit('confirm'))this.buy()}
   buy(){{const id=SHOP_LIST[this.i],it=ITEMS[id];
-      if(save.owned.includes(id)){this.say='You already own that one. Try it on under Equip!';SFX.deny()}
+      if(save.owned.includes(id)&&it.type==='w'){const L=lvl(id);
+        if(L>=5){this.say=`The ${it.name} is maxed out at level 5. Double damage, top speed!`;SFX.deny()}
+        else if(save.coins<UP_COST[L]){this.say=`Level ${L+1} costs ${UP_COST[L]} coins. Come back with more!`;this.shake=.4;SFX.deny()}
+        else{save.coins-=UP_COST[L];save.lv[id]=L+1;persist();SFX.coin();this.say=L+1>=5?`MAXED! The ${it.name} hits twice as hard and shoots faster.`:`Sharper already! The ${it.name} is now level ${L+1}.`}}
+      else if(save.owned.includes(id)){this.say='You already own that one. Try it on under Equip!';SFX.deny()}
       else if(save.coins<it.cost){this.say=`That's ${it.cost} coins. Come back with more!`;this.shake=.4;SFX.deny();this.broke=(this.broke||0)+1;if(this.broke===3)egg('broke')}
       else{save.coins-=it.cost;save.owned.push(id);if(it.type==='w'&&!save.equip.w2&&save.equip.w1!==id)save.equip.w2=id;else if(it.type==='c'&&!save.equip.charm)save.equip.charm=id;persist();SFX.coin();this.say=`A fine pick! The ${it.name} is yours.`}}}
   draw(c){const t=this.t;const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#5a3a24');g.addColorStop(1,'#2e1c12');c.fillStyle=g;c.fillRect(0,0,W,H);
@@ -2330,14 +2337,16 @@ class Shop{
     const bx=12+(this.shake?Math.sin(t*80)*6:0);wrect(c,bx,16,380,58,3,2);c.fillStyle=CREAM;c.fill();inkStroke(c,3);wrapText(c,this.say,bx+16,34,350,20,15,INK);
     txt(c,"OL' SMUDGE'S SUPPLIES",210,474,18,'#f7d26a','center',FD);coinBadge(c,140,510);
     const lx=460;txt3d(c,'SHOP',lx+220,40,40,'#f7d26a',5);
-    SHOP_LIST.forEach((id,k)=>{const it=ITEMS[id],y=76+k*34,sel=k===this.i,own=save.owned.includes(id);
-      hot(lx-10,y-15,470,31,()=>{if(this.i===k)this.buy();else{this.i=k;SFX.menu()}});
-      if(sel){wrect(c,lx-10,y-15,470,31,k,1.5);c.fillStyle='rgba(247,210,106,.28)';c.fill();inkStroke(c,2)}
-      drawIcon(c,id,lx+14,y,.62);txt(c,it.name,lx+40,y+1,17,own?'#a89a80':CREAM,'left',FD,true,4);
-      txt(c,it.type==='w'?'shot':'charm',lx+250,y+1,13,'#d8c8a2','left',FB,false);
-      txt(c,own?'OWNED':it.cost+'¢',lx+450,y+1,16,own?'#9ab07a':(save.coins>=it.cost?'#f7d26a':'#c08070'),'right',FD,true,4)});
-    const it=ITEMS[SHOP_LIST[this.i]];wrect(c,lx-10,428,470,64,9,2);c.fillStyle='rgba(239,226,194,.9)';c.fill();inkStroke(c,2.5);wrapText(c,it.desc,lx+6,446,440,20,15,INK);
-    txt(c,'Jump, or click twice: buy  ·  Esc: back',lx+160,H-20,13,'#d8c8a2','center',FB,false);
+    SHOP_LIST.forEach((id,k)=>{const it=ITEMS[id],y=76+k*31,sel=k===this.i,own=save.owned.includes(id),up=own&&it.type==='w',L=lvl(id);
+      hot(lx-10,y-15,470,29,()=>{if(this.i===k)this.buy();else{this.i=k;SFX.menu()}});
+      if(sel){wrect(c,lx-10,y-15,470,29,k,1.5);c.fillStyle='rgba(247,210,106,.28)';c.fill();inkStroke(c,2)}
+      drawIcon(c,id,lx+14,y,.62);txt(c,it.name,lx+40,y+1,17,own&&!up?'#a89a80':CREAM,'left',FD,true,4);
+      if(up){for(let q=0;q<5;q++){c.beginPath();c.arc(lx+238+q*14,y+1,5,0,TAU);c.fillStyle=q<L?'#f7d26a':'rgba(239,226,194,.18)';c.fill();c.lineWidth=1.5;c.strokeStyle=INK;c.stroke()}}
+      else txt(c,it.type==='w'?'shot':'charm',lx+250,y+1,13,'#d8c8a2','left',FB,false);
+      const tag=up?(L>=5?'MAX':'UP '+UP_COST[L]+'¢'):own?'OWNED':it.cost+'¢',tc=up?(L>=5?'#9ab07a':save.coins>=UP_COST[L]?'#f7d26a':'#c08070'):own?'#9ab07a':(save.coins>=it.cost?'#f7d26a':'#c08070');
+      txt(c,tag,lx+450,y+1,16,tc,'right',FD,true,4)});
+    const it=ITEMS[SHOP_LIST[this.i]];wrect(c,lx-10,428,470,64,9,2);c.fillStyle='rgba(239,226,194,.9)';c.fill();inkStroke(c,2.5);wrapText(c,it.desc+(it.type==='w'&&save.owned.includes(SHOP_LIST[this.i])?' '+lvText(SHOP_LIST[this.i]):''),lx+6,446,440,18,14,INK);
+    txt(c,'Jump, or click twice: buy or upgrade  ·  Esc: back',lx+160,H-20,13,'#d8c8a2','center',FB,false);
     button(c,W-122,H-42,106,32,'Back',false,7);hot(W-122,H-42,106,32,()=>{SFX.pick();go(new MapScene())})}
 }
 
@@ -2359,7 +2368,7 @@ class Equip{
       c.save();c.translate(W/2,y+40);if(sel)c.scale(1.03,1.03);
       c.fillStyle='rgba(28,19,12,.3)';wrect(c,-330+6,-42+7,660,84,i+3,2);c.fill();wrect(c,-330,-42,660,84,i+3,2);shade(c,0,0,330,42,sel?'#f6e3a8':CREAM);inkStroke(c,sel?4:3);
       txt(c,lab,-310,-22,15,'#6a4a30','left',FB,false);
-      if(id)drawIcon(c,id,-260,10,1);txt(c,id?ITEMS[id].name:'Empty',-220,6,24,INK,'left',FD,false);
+      if(id)drawIcon(c,id,-260,10,1);txt(c,id?ITEMS[id].name+(ITEMS[id].type==='w'&&id!=='mega'?'  Lv '+lvl(id):''):'Empty',-220,6,24,INK,'left',FD,false);
       if(id)wrapText(c,ITEMS[id].desc,-220,30,360,16,13,'#5a4030');
       txt(c,(o.length>1?'◀ ':'')+(o.indexOf(id)+1)+' / '+o.length+(o.length>1?' ▶':''),310,6,16,RED,'right',FD,false);
       c.restore()});
