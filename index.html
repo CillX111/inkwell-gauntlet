@@ -2156,6 +2156,10 @@ class Fight{
     const wid=p.weapons[p.wi];drawIcon(c,wid,232,H-38,.8);txt(c,ITEMS[wid].name,252,H-38,14,CREAM,'left',FB,true,4);
     if(p.weapons.length>1)txt(c,'(E) swap',252,H-20,11,'#d8c8a2','left',FB,true,3);
     txt(c,this.def.name,W-18,24,18,CREAM,'right');
+    {const B=this.boss,pr=clamp(1-B.hp/B.maxHp,0,1),bw=400,bx=W/2-bw/2,by=10,bh=16;
+      c.fillStyle='rgba(20,13,8,.78)';wrect(c,bx-5,by-5,bw+70,bh+10,77,1);c.fill();wrect(c,bx,by,bw,bh,78,.8);c.fillStyle='rgba(239,226,194,.2)';c.fill();
+      if(pr>0){c.save();wrect(c,bx,by,bw,bh,78,.8);c.clip();const g=c.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#5ad040');g.addColorStop(1,'#b8f060');c.fillStyle=g;c.fillRect(bx,by,bw*pr,bh);c.fillStyle='rgba(255,255,255,.35)';c.fillRect(bx,by+2,bw*pr,4);c.restore()}
+      wrect(c,bx,by,bw,bh,78,.8);c.lineWidth=2.5;c.strokeStyle=CREAM;c.stroke();txt(c,Math.floor(pr*100)+'%',bx+bw+12,by+bh/2+1,18,CREAM,'left',FD,false)}
     if(save.expert)txt(c,'EXPERT',W-18,46,13,'#f7d26a','right',FD);
   }
   drawDead(c){
