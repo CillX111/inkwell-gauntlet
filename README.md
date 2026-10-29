@@ -6,7 +6,7 @@ A boss-rush game in the style of 1930s rubber-hose cartoons. It runs in the brow
 
 ## Play
 
-Download `index.html` and open it in any modern browser. Progress saves in that browser.
+**[Play it in your browser](https://cillx1.github.io/inkwell-gauntlet/)**, or download `index.html` and open it in any modern browser. Progress saves in that browser.
 
 ## The bosses
 
