@@ -1357,7 +1357,7 @@ class Blimp extends Boss{
 }
 
 class Smudge extends Boss{
-  constructor(){super(4000);this.x=800;this.y=GROUND;this.rise=0;this.reverse=0;this.blinds=[];
+  constructor(){super(3200);this.x=870;this.y=GROUND;this.rise=0;this.reverse=0;this.blinds=[];
     this.thresholds=[.88,.76,.64,.52,.4,.28,.16,.05];
     this.phaseList=[{name:'Ink Drops',fn:this.pDrops},{name:'Blot Clones',fn:this.pClones},{name:'Ink Blind',fn:this.pBlind},{name:'Backwards Day',fn:this.pBack},{name:'Quill Rain',fn:this.pQuill},{name:'Fake Out',fn:this.pFake},{name:'Ink Flood',fn:this.pFlood},{name:'Total Smudge',fn:this.pTotal},{name:'Last Stand',fn:this.pLast}]}
   motion(dt){this.rise=Math.min(1,this.rise+dt*.6);this.reverse=Math.max(0,this.reverse-dt);
@@ -1370,50 +1370,50 @@ class Smudge extends Boss{
   drip(x,pink){fire2(x,-20,0,rand(240,300),{kind:'drop',col:'#1c1830',r:9,groundDie:true,pink,splash:b=>F.hazards.push(hzPuddle(b.cx,26,2.0))})}
   fake(x,y,a,s){fire(x,y,a,s,{kind:'fake',col:PINK,r:12})}
   blots(n,spread,spd){const [mx,my]=this.mpt();fan(mx,my,angTo(mx,my),n,spread,spd,{kind:'blot',col:'#1c1830',r:11})}
-  splatScreen(n){for(let i=0;i<n;i++)this.blinds.push({x:rand(90,870),y:rand(90,450),r:rand(70,115),t:0,life:rand(3,4),seed:rand(0,99)});SFX.splat()}
+  splatScreen(n){for(let i=0;i<n;i++)this.blinds.push({x:rand(90,870),y:rand(90,450),r:rand(70,115),t:0,life:rand(2.2,3),seed:rand(0,99)});SFX.splat()}
   *pDrops(){for(let n=0;;n++){
-    for(let i=0;i<10;i++){this.drip(clamp(PL().x+rand(-220,220),50,640),i===5&&n%2===0);yield .16}
+    for(let i=0;i<8;i++){this.drip(clamp(PL().x+rand(-220,220),50,720),i===5&&n%2===0);yield .16}
     this.laugh();for(let k=0;k<2;k++){this.blots(5,.8,260);yield .4}
     yield .5}}
   *pClones(){for(let n=0;;n++){
-    const px=PL().x,xs=px<340?[560,430]:[110,240];
-    for(const x of xs)F.hazards.push(hzClone(x,4.2));
+    const px=PL().x,xs=px<375?[650,510]:[110,250];
+    for(const x of xs)F.hazards.push(hzClone(x,3.6));
     this.laugh();yield .8;
     for(let k=0;k<4;k++){const [mx,my]=this.mpt(),a=angTo(mx,my);
       for(let i=0;i<5;i++){const o=(i-2)*.22;if(i===2&&k%2===0)fire(mx,my,a+o,230,{r:12,pink:true});else if(i%2)this.fake(mx,my,a+o,230);else fire(mx,my,a+o,250,{kind:'blot',col:'#1c1830',r:11})}
       yield .75}
     yield 1.2}}
   *pBlind(){for(let n=0;;n++){
-    this.laugh();this.splatScreen(n%2?3:2);yield .3;
+    this.laugh();this.splatScreen(n%2?2:1);yield .3;
     let a=rand(0,TAU);
-    for(let i=0;i<34;i++){const [mx,my]=this.mpt();for(let k=0;k<3;k++)fire(mx,my,a+k*TAU/3,170,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===17&&k===0});a+=.27;yield .08}
-    for(let i=0;i<4;i++){this.drip(clamp(PL().x+rand(-120,120),50,640),false);yield .15}yield .7}}
+    for(let i=0;i<28;i++){const [mx,my]=this.mpt();for(let k=0;k<3;k++)fire(mx,my,a+k*TAU/3,170,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===17&&k===0});a+=.27;yield .08}
+    for(let i=0;i<4;i++){this.drip(clamp(PL().x+rand(-120,120),50,720),false);yield .15}yield .7}}
   *pBack(){for(let n=0;;n++){
-    this.laugh();this.reverse=3.6;SFX.zap();yield .4;
-    for(let k=0;k<4;k++){const d=k%2?1:-1;F.hazards.push(hzWave(d>0?30:660,d,300,50,'#2a2440'));yield .5;this.blots(3,.4,270);if(k===2){const [mx,my]=this.mpt();fire(mx,my,angTo(mx,my)+.25,220,{r:12,pink:true})}yield .3}
+    this.laugh();this.reverse=2.6;SFX.zap();yield .4;
+    for(let k=0;k<4;k++){const d=k%2?1:-1;F.hazards.push(hzWave(d>0?30:730,d,280,50,'#2a2440'));yield .5;this.blots(3,.4,270);if(k===2){const [mx,my]=this.mpt();fire(mx,my,angTo(mx,my)+.25,220,{r:12,pink:true})}yield .3}
     yield 1.4}}
   *pQuill(){for(let n=0;;n++){
-    for(let k=0;k<5;k++){F.hazards.push(hzQuill(clamp(PL().x,50,640),.55));yield .34}
+    for(let k=0;k<4;k++){F.hazards.push(hzQuill(clamp(PL().x,50,720),.6));yield .4}
     this.laugh();this.blots(7,1.1,250);const [mx,my]=this.mpt();fire(mx,my,angTo(mx,my)+.3,220,{r:12,pink:true});yield .6;
-    for(let i=0;i<6;i++){this.drip(rand(50,640),false);yield .1}yield .6}}
+    for(let i=0;i<6;i++){this.drip(rand(50,720),false);yield .1}yield .6}}
   *pFake(){for(let n=0;;n++){
     this.laugh();
-    for(let i=0;i<12;i++){const [mx,my]=this.mpt(),a=angTo(mx,my)+rand(-.6,.6);if(i===7)fire(mx,my,a,220,{r:12,pink:true});else this.fake(mx,my,a,rand(200,260));yield .12}
+    for(let i=0;i<10;i++){const [mx,my]=this.mpt(),a=angTo(mx,my)+rand(-.6,.6);if(i===6)fire(mx,my,a,220,{r:12,pink:true});else this.fake(mx,my,a,rand(200,260));yield .12}
     yield .3;for(let k=0;k<4;k++){const [x,y]=this.mpt();fire(x,y,Math.PI+rand(-.8,.8),200,{kind:'blot',col:'#3a2a50',r:12,home:1.8,homeT:1.6,life:6});yield .2}
     yield .9}}
   *pFlood(){for(let n=0;;n++){
-    const left=PL().x<340;F.hazards.push(hzFlood(left?30:330,left?350:650,.9,1.1));
+    const left=PL().x<375;F.hazards.push(hzFlood(left?30:360,left?390:730,1.0,1.0));
     yield .3;const [mx,my]=this.mpt();ring(mx,my,16,230,{kind:'blot',col:'#1c1830',r:10,stopAt:.5,resumeAt:1.0,resumeSpd:280,life:7},n*.2);
-    yield 1.4;this.laugh();for(let i=0;i<5;i++){this.drip(clamp(PL().x+rand(-160,160),50,640),i===2);yield .14}yield .5}}
+    yield 1.4;this.laugh();for(let i=0;i<5;i++){this.drip(clamp(PL().x+rand(-160,160),50,720),i===2);yield .14}yield .5}}
   *pTotal(){for(let n=0;;n++){
     let a=rand(0,TAU);this.mouth=1.4;
-    for(let i=0;i<36;i++){const [mx,my]=this.mpt();for(let k=0;k<3;k++)fire(mx,my,a+k*TAU/3,185,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===18&&k===0});a+=.25;
-      if(i%6===0)this.drip(clamp(PL().x+rand(-200,200),50,640),false);if(i%12===6)F.hazards.push(hzQuill(clamp(PL().x,50,640),.6));yield .075}
+    for(let i=0;i<30;i++){const [mx,my]=this.mpt();for(let k=0;k<3;k++)fire(mx,my,a+k*TAU/3,185,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===15&&k===0});a+=.25;
+      if(i%6===0)this.drip(clamp(PL().x+rand(-200,200),50,720),false);if(i%12===6)F.hazards.push(hzQuill(clamp(PL().x,50,720),.6));yield .075}
     if(n%2===1){this.laugh();this.splatScreen(2)}yield .7}}
   *pLast(){for(let n=0;;n++){
-    this.laugh();if(n%2===0)this.reverse=3;else this.splatScreen(2);
-    for(let k=0;k<3;k++){F.hazards.push(hzQuill(clamp(PL().x,50,640),.5));this.blots(5,.9,270);const [mx,my]=this.mpt();this.fake(mx,my,angTo(mx,my)+.5,240);yield .35}
-    let a=rand(0,TAU);for(let i=0;i<24;i++){const [mx,my]=this.mpt();for(let k=0;k<4;k++)fire(mx,my,a+k*TAU/4,200,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===12&&k===0});a+=.23;if(i%5===0)this.drip(rand(50,640),false);yield .07}
+    this.laugh();if(n%2===0)this.reverse=2.2;else this.splatScreen(1);
+    for(let k=0;k<3;k++){F.hazards.push(hzQuill(clamp(PL().x,50,720),.5));this.blots(5,.9,270);const [mx,my]=this.mpt();this.fake(mx,my,angTo(mx,my)+.5,240);yield .35}
+    let a=rand(0,TAU);for(let i=0;i<20;i++){const [mx,my]=this.mpt();for(let k=0;k<3;k++)fire(mx,my,a+k*TAU/3,200,{kind:'blot',col:'#1c1830',r:10,groundDie:true,pink:i===10&&k===0});a+=.27;if(i%5===0)this.drip(rand(50,720),false);yield .07}
     yield .5}}
   draw(c){const s=this.st();s.rise=ease(this.rise);
     c.globalAlpha=.3;c.fillStyle=INK;c.beginPath();c.ellipse(this.x,GROUND+3,180,14,0,0,TAU);c.fill();c.globalAlpha=1;
@@ -1902,7 +1902,7 @@ const BOSSES=[
     art:(c,x,y,s,t)=>drawJack(c,x+14*s,y+128*s,s*.4,{t,hx:-20,hy:-300+Math.sin(t*3)*10,lx:-.5,ly:.3})},
   {id:'blimp',name:'Admiral Blimpwick',tag:'Dropping in uninvited',mode:'air',stage:'dusk',par:190,phases:7,make:()=>new Blimp(),drop:'coffee',poster:'#c07a4a',lock:()=>!!save.clears.jack,why:'Beat Jolly Jack',
     art:(c,x,y,s,t)=>drawBlimp(c,x+40*s,y-4*s,s*.4,{t,lx:-1,ly:.2})},
-  {id:'smudge',name:'King Smudge',tag:'THE END. Not every pink thing is your friend',mode:'plat',stage:'desk',par:300,phases:9,wall:[40,640],make:()=>new Smudge(),drop:'locket',poster:'#3a3050',final:true,lock:()=>BOSSES.every(x=>x.id==='smudge'||x.world===2||save.clears[x.id]),why:'Beat every other boss',
+  {id:'smudge',name:'King Smudge',tag:'THE END. Not every pink thing is your friend',mode:'plat',stage:'desk',par:300,phases:9,wall:[30,725],make:()=>new Smudge(),drop:'locket',poster:'#3a3050',final:true,lock:()=>BOSSES.every(x=>x.id==='smudge'||x.world===2||save.clears[x.id]),why:'Beat every other boss',
     art:(c,x,y,s,t)=>drawSmudge(c,x,y+118*s,s*.34,{t,lx:-.4,ly:.3})},
   {id:'snake',world:2,name:'Sid Sidewinder',tag:'Run, little ink, run!',mode:'plat',stage:'canyon',par:170,phases:7,wall:[330,900],run:true,make:()=>new Snake(),drop:'smoke',poster:'#d8865a',lock:()=>w1Done(),why:'Beat World 1',
     art:(c,x,y,s,t)=>{ball(c,x-20*s,y+92*s,100*s,30*s,'#7a9a3a',3,3,.06);ball(c,x+16*s,y+62*s,70*s,24*s,'#7a9a3a',4,3,.06);drawSnakeHead(c,x-14*s,y-6*s,s*.55,{t,lx:1,ly:.2})}},
