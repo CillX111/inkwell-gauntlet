@@ -30,6 +30,16 @@ World 2 is hidden. Beat all nine World 1 bosses, then scroll down on the title s
 4. Mama Matryoshka, who gets smaller and faster every phase (on foot)
 5. The Projectionist, the World 2 finale (in the air)
 
+### World 3
+
+World 3 is plane fights only. Beat all of World 2, then scroll down on the map again.
+
+1. Wriggles the Sky Wyrm, a giant segmented worm that weaves around the screen
+2. Lanterna the Deep, an anglerfish fought while the cave scrolls down and then up
+3. The Cogitator, a machine brain you fight while flying through a scrolling maze
+4. Pyrella the Phoenix, who traps you in a shrinking ring of fire
+5. The Ink Eternal, the World 3 finale, with SURVIVE phases where it is shielded
+
 Every boss has several phases, ending in a last stand at 5% health. Beat bosses to earn coins, buy new shots and charms in the shop, and pick your loadout under Equip. Expert mode makes bullets faster and bosses tougher.
 
 ## Controls
@@ -47,4 +57,4 @@ Every boss has several phases, ending in a last stand at 5% health. Beat bosses 
 
 Gamepads and touch controls work too. Pink things can be parried: jump into them and press jump again.
 
-There are 21 easter eggs to find, plus a secret weapon somewhere on the title screen.
+There are 23 easter eggs to find, plus a secret weapon somewhere on the title screen.
