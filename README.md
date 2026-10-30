@@ -40,6 +40,8 @@ World 3 is plane fights only. Beat all of World 2, then scroll down on the map a
 4. Pyrella the Phoenix, who traps you in a shrinking ring of fire
 5. The Ink Eternal, the World 3 finale, with SURVIVE phases where it is shielded
 
+The World 3 bosses drop five extra weapons, which the shop also sells: the Storm Staff (fast lightning bolts), the Boomer Blade (a thrown blade that comes back), the Starfall Tome (stars that fall onto the boss), the Ink Flamer (a short-range flamethrower) and the Wisp Lantern (wisps that circle you, then dive at the boss).
+
 Every boss has several phases, ending in a last stand at 5% health. Beat bosses to earn coins, buy new shots and charms in the shop, and pick your loadout under Equip. Expert mode makes bullets faster and bosses tougher.
 
 ## Controls

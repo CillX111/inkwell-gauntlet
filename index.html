@@ -233,6 +233,11 @@ const ITEMS={
   homing:{type:'w',name:'Seeker Nib',cost:4,desc:'Nibs that curve toward the boss. Lower damage, never misses.'},
   lobber:{type:'w',name:'Ink Bomb',cost:5,desc:'Heavy arcing bombs that bounce once. Big hits, slow rate.'},
   charge:{type:'w',name:'Quill Charge',cost:6,desc:'Hold to charge, release for a piercing blast. Tap for weak shots.'},
+  storm:{type:'w',name:'Storm Staff',cost:6,desc:'Crackling bolts that fly almost instantly. Strong, steady magic.'},
+  boomer:{type:'w',name:'Boomer Blade',cost:6,desc:'A spinning blade that flies out and comes back, hitting on the way out and the way home.'},
+  starfall:{type:'w',name:'Starfall Tome',cost:7,desc:'Stars rain from the sky onto the boss. Mazes and walls cannot stop them.'},
+  flamer:{type:'w',name:'Ink Flamer',cost:5,desc:'A roaring stream of fire. Huge damage up close, short reach.'},
+  wisp:{type:'w',name:'Wisp Lantern',cost:7,desc:'Summons ink wisps that circle you, then dive at the boss for big hits.'},
   locket:{type:'c',name:'Heart Locket',cost:3,desc:'Start every fight with +1 hit point.'},
   smoke:{type:'c',name:'Smoke Dash',cost:4,desc:'You cannot be hit while dashing.'},
   coffee:{type:'c',name:'Hot Coffee',cost:3,desc:'Your super meter fills slowly on its own.'},
@@ -241,7 +246,7 @@ const ITEMS={
   mega:{type:'w',name:'Doom Pencil',cost:0,desc:'SECRET! Melts any boss in seconds. Poke Dot on the title screen again to put it away.'},
   goldnib:{type:'c',name:'Golden Nib',cost:9,desc:'Your shots deal 20% more damage, but you lose 1 hit point.'},
 };
-const SHOP_LIST=['pencil','spread','homing','lobber','charge','locket','smoke','coffee','ribbon','spring','goldnib'];
+const SHOP_LIST=['pencil','spread','homing','lobber','charge','storm','boomer','starfall','flamer','wisp','locket','smoke','coffee','ribbon','spring','goldnib'];
 const has=id=>save.equip.charm===id;
 const lvl=id=>Math.min(5,(save.lv&&save.lv[id])||1),UP_COST=[0,1,2,3,4];
 const dmgMul=id=>1+(lvl(id)-1)*.25,rateMul=id=>1-(lvl(id)-1)*.0625;
@@ -255,6 +260,11 @@ function drawIcon(c,id,x,y,s=1){
     case 'homing':c.beginPath();c.moveTo(-16,10);c.quadraticCurveTo(-6,-18,14,-10);inkStroke(c,3);c.beginPath();c.moveTo(-8,14);c.lineTo(0,-2);c.lineTo(8,14);c.closePath();c.fillStyle=GOLD;c.fill();inkStroke(c,2.5);break;
     case 'lobber':ball(c,0,4,14,14,'#2a2440',4,2.5);c.beginPath();c.moveTo(6,-8);c.quadraticCurveTo(12,-18,18,-14);inkStroke(c,2.5);star(c,19,-15,5,2,5,0,2);c.fillStyle=GOLD;c.fill();break;
     case 'charge':ball(c,0,0,16,16,'#f7e7a0',6,0,.1);c.globalAlpha=.6;ball(c,0,0,11,11,'#fff7d0',2,0);c.globalAlpha=1;c.rotate(-.6);c.beginPath();c.moveTo(-18,0);c.quadraticCurveTo(0,-12,18,0);c.quadraticCurveTo(0,8,-18,0);c.fillStyle=CREAM;c.fill();inkStroke(c,2.5);break;
+    case 'storm':c.rotate(-.5);wrect(c,-20,-3,30,6,2,1);c.fillStyle='#8a5a3a';c.fill();inkStroke(c,2.5);c.beginPath();c.moveTo(10,-12);c.lineTo(4,0);c.lineTo(12,0);c.lineTo(6,12);c.lineTo(22,-3);c.lineTo(14,-3);c.lineTo(20,-12);c.closePath();c.fillStyle='#bfe8ff';c.fill();inkStroke(c,2);break;
+    case 'boomer':c.rotate(CLOCK*3);star(c,0,0,17,6,4,0,2);c.fillStyle='#c8d0e0';c.fill();inkStroke(c,2.5);ball(c,0,0,4,4,RED,1,2);break;
+    case 'starfall':wrect(c,-15,-12,30,24,3,1);c.fillStyle='#3a3a7a';c.fill();inkStroke(c,2.5);c.fillStyle=CREAM;c.fillRect(-2,-12,4,24);star(c,8,-14,7,3,5,-Math.PI/2,3);c.fillStyle=GOLD;c.fill();inkStroke(c,2);break;
+    case 'flamer':wrect(c,-20,-5,22,10,2,1);c.fillStyle='#6a6a72';c.fill();inkStroke(c,2.5);for(let k=0;k<3;k++)ball(c,6+k*6,-k*2,7-k,6-k,['#c8402c','#f08a3a','#f7d26a'][k],k+1,2,.15);break;
+    case 'wisp':ball(c,0,0,13,13,'#8ae0d0',3,2.5,.12);c.beginPath();c.moveTo(-10,6);c.quadraticCurveTo(-16,16,-20,10);inkStroke(c,2.5);pieEye(c,-3,-2,3,4,1,0,1.5);pieEye(c,5,-2,3,4,1,0,1.5);break;
     case 'locket':c.beginPath();c.moveTo(0,14);c.bezierCurveTo(-24,-2,-12,-20,0,-8);c.bezierCurveTo(12,-20,24,-2,0,14);c.closePath();shade(c,0,0,16,16,RED);inkStroke(c,2.5);break;
     case 'smoke':for(let i=0;i<4;i++)ball(c,-10+i*7,(i%2)*-6+2,9,8,'#cfc6b4',i+2,2.5,.12);break;
     case 'coffee':wrect(c,-12,-6,22,20,4,1.5);c.fillStyle=CREAM;c.fill();inkStroke(c,2.5);c.beginPath();c.arc(12,4,6,-1.4,1.4);inkStroke(c,3);for(let i=0;i<2;i++){c.beginPath();c.moveTo(-5+i*8,-10);c.quadraticCurveTo(-1+i*8,-15,-5+i*8,-20);inkStroke(c,2)}break;
@@ -444,7 +454,7 @@ function popText(x,y,s,col=PAPER){addPart({kind:'text',x,y,vy:-60,life:.9,s,col}
    ========================================================= */
 let F=null;
 const ROT_DIR=new Set(['seed','petal','drop','bird','torpedo','plane']),ROT_SPIN=new Set(['star','gear','hand','bone','card','disc','popcorn','scale','frame']);
-function speedMul(){return save.expert?1.15:.88}
+function speedMul(){return (save.expert?1.15:.88)*(F&&F.def&&F.def.world===3?1.12:1)}
 function fire2(x,y,vx,vy,o={}){
   const m=o.raw?1:speedMul();
   const b={x,y,cx:x,cy:y,vx:vx*m,vy:vy*m,r:o.r||9,kind:o.kind||'orb',col:o.pink?PINK:(o.col||'#e9dcc0'),pink:!!o.pink,g:o.g||0,turn:o.turn||0,
@@ -1066,7 +1076,7 @@ class Boss{
     if(this.dead){this.deathT+=dt;if(Math.random()<dt*12){const h=this.hurt()[0];if(h)boom(h[0]+rand(-h[2],h[2])*.7,h[1]+rand(-h[2],h[2])*.7,.8)}return}
     if(this.trans>0){this.trans-=dt*(megaOn()?4:1);if(this.trans<=0){this.gen=this.pattern(this.phase);this.wait=0}return}
     if(!this.gen)return;
-    this.wait-=dt;let guard=0;
+    this.wait-=dt*(this.pace||1);let guard=0;
     while(this.wait<=0&&guard++<60){const r=this.gen.next();if(r.done)this.gen=this.pattern(this.phase);else this.wait+=r.value||0}
   }
   damage(d){
@@ -1771,6 +1781,7 @@ class Proj extends Boss{
 }
 
 class W3 extends Boss{
+  constructor(hp){super(hp*1.2);this.pace=1.3}
   tickShield(dt){if(this.shieldT>0)this.shieldT=Math.max(0,this.shieldT-dt)}
   endShield(){this.shieldT=0;if(!this.dead&&this.phase<this.thresholds.length){this.hp=Math.min(this.hp,this.maxHp*this.thresholds[this.phase]+1);this.damage(2)}}
   startMaze(gh){this.maze={gh,t:0,gy:clamp(PL().y,gh/2+40,H-gh/2-40),gv:0}}
@@ -2166,15 +2177,15 @@ const BOSSES=[
     art:(c,x,y,s,t)=>drawDoll(c,x,y+128*s,s*.4,{t,lx:-.3,ly:.3})},
   {id:'proj',world:2,name:'The Projectionist',tag:'The final reel. No refunds',mode:'air',stage:'cinema',par:320,phases:9,make:()=>new Proj(),drop:'goldnib',poster:'#2a1a24',final:true,endTag:'FINALE',lock:()=>!!save.clears.doll,why:'Beat Mama Matryoshka',
     art:(c,x,y,s,t)=>drawProj(c,x+22*s,y+36*s,s*.36,{t,lx:-1,ly:0})},
-  {id:'wyrm',world:3,name:'Wriggles the Sky Wyrm',tag:'Longer than your patience',mode:'air',stage:'stormsky',par:190,phases:6,make:()=>new Wyrm(),drop:'spring',poster:'#2f5a52',lock:()=>w2Done(),why:'Beat World 2',
+  {id:'wyrm',world:3,name:'Wriggles the Sky Wyrm',tag:'Longer than your patience',mode:'air',stage:'stormsky',par:190,phases:6,make:()=>new Wyrm(),drop:'storm',poster:'#2f5a52',lock:()=>w2Done(),why:'Beat World 2',
     art:(c,x,y,s,t)=>{const P=u=>[x+Math.cos(u)*52*s,y+16*s+Math.sin(u*2)*30*s],u0=t*1.2;for(let i=9;i>=1;i--){const [sx,sy]=P(u0-i*.32);drawWyrmSeg(c,sx,sy,(20-i)*s,i,false)}const [hx,hy]=P(u0),[nx,ny]=P(u0+.05);drawWyrmHead(c,hx,hy,Math.atan2(ny-hy,nx-hx),{t,sc:s*.62})}},
-  {id:'angler',world:3,name:'Lanterna the Deep',tag:'Follow the pretty light',mode:'air',stage:'abyss',par:200,phases:6,make:()=>new Angler(),drop:'homing',poster:'#14304a',lock:()=>!!save.clears.wyrm,why:'Beat the Sky Wyrm',
+  {id:'angler',world:3,name:'Lanterna the Deep',tag:'Follow the pretty light',mode:'air',stage:'abyss',par:200,phases:6,make:()=>new Angler(),drop:'wisp',poster:'#14304a',lock:()=>!!save.clears.wyrm,why:'Beat the Sky Wyrm',
     art:(c,x,y,s,t)=>drawAngler(c,x+20*s,y+40*s,s*.42,{t,lx:-1,ly:0})},
-  {id:'cog',world:3,name:'The Cogitator',tag:'Think fast. It already did',mode:'air',stage:'machine',par:215,phases:7,make:()=>new Cog(),drop:'charge',poster:'#4a4652',lock:()=>!!save.clears.angler,why:'Beat Lanterna',
+  {id:'cog',world:3,name:'The Cogitator',tag:'Think fast. It already did',mode:'air',stage:'machine',par:215,phases:7,make:()=>new Cog(),drop:'boomer',poster:'#4a4652',lock:()=>!!save.clears.angler,why:'Beat Lanterna',
     art:(c,x,y,s,t)=>drawCog(c,x+6*s,y+20*s,s*.5,{t,lx:-1,ly:0})},
-  {id:'phoenix',world:3,name:'Pyrella the Phoenix',tag:'She always comes back',mode:'air',stage:'inferno',par:230,phases:7,make:()=>new Phoenix(),drop:'coffee',poster:'#a83a1a',lock:()=>!!save.clears.cog,why:'Beat the Cogitator',
+  {id:'phoenix',world:3,name:'Pyrella the Phoenix',tag:'She always comes back',mode:'air',stage:'inferno',par:230,phases:7,make:()=>new Phoenix(),drop:'flamer',poster:'#a83a1a',lock:()=>!!save.clears.cog,why:'Beat the Cogitator',
     art:(c,x,y,s,t)=>drawPhoenix(c,x+20*s,y+30*s,s*.45,{t,lx:-1,ly:0})},
-  {id:'eternal',world:3,name:'The Ink Eternal',tag:'Before the first drop, there was ink',mode:'air',stage:'cosmos',par:360,phases:9,make:()=>new Eternal(),drop:'goldnib',poster:'#1a1030',final:true,endTag:'FINALE',lock:()=>!!save.clears.phoenix,why:'Beat Pyrella',
+  {id:'eternal',world:3,name:'The Ink Eternal',tag:'Before the first drop, there was ink',mode:'air',stage:'cosmos',par:360,phases:9,make:()=>new Eternal(),drop:'starfall',poster:'#1a1030',final:true,endTag:'FINALE',lock:()=>!!save.clears.phoenix,why:'Beat Pyrella',
     art:(c,x,y,s,t)=>drawEternal(c,x,y+20*s,s*.5,{t,lx:-1,ly:0})},
 ];
 const clearsCount=()=>BOSSES.filter(b=>save.clears[b.id]).length;
@@ -2247,6 +2258,12 @@ function fireWeapon(p,id,mx,my,a){
     case 'mega':for(let k=-1;k<=1;k++)pshot(mx,my,a+k*.25,1300,28,{kind:'mega',r:16,home:16,pierce:true,life:1.6});if(Math.random()<.3)F.shake=Math.max(F.shake,3);break;
     case 'spread':for(let i=-2;i<=2;i++)pshot(mx,my,a+i*.16,820,2.3,{kind:'drop',r:6,life:.3});break;
     case 'homing':p.alt=!p.alt;pshot(mx,my,a+(p.alt?-.45:.45),640,2.7,{kind:'nib',home:7,life:2.2});break;
+    case 'storm':pshot(mx,my,a+rand(-.03,.03),1700,9,{kind:'bolt',r:8,life:.8});break;
+    case 'boomer':pshot(mx,my,a,1050,7,{kind:'boomer',r:14,pierce:true,life:3,boom:1});break;
+    case 'starfall':{const h=F.boss.hurt()[0];if(!h){pshot(mx,my,a,1000,7,{kind:'starshot',r:10});break}
+      const sx=h[0]+rand(-160,120),sy=-24;pshot(sx,sy,Math.atan2(h[1]+rand(-h[2]*.4,h[2]*.4)-sy,h[0]-sx),1050,7,{kind:'starshot',r:10,life:1.4});break}
+    case 'flamer':pshot(mx,my,a+rand(-.13,.13),rand(560,680),3.4,{kind:'flame',r:12,life:.32,pierce:true});break;
+    case 'wisp':pshot(mx,my,a,0,10,{kind:'wisp',r:10,life:2.6,orb:rand(0,TAU),orbT:.4});break;
     case 'lobber':{const s=air?520:560;F.shots.push({x:mx,y:my,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(air?160:300),g:air?900:1500,bounce:air?0:1,dmg:11.5*(has('goldnib')?1.2:1)*dmgMul('lobber'),r:12,kind:'bomb',life:2.4,t:0,home:0,pierce:false});break}
   }
   SFX.shoot();
@@ -2255,6 +2272,10 @@ function updateShots(dt){
   const b=F.boss,hz=b.hurt();
   for(let i=F.shots.length-1;i>=0;i--){const s=F.shots[i];s.t+=dt;
     if(s.home&&hz.length){const sp=Math.hypot(s.vx,s.vy),cur=Math.atan2(s.vy,s.vx),tgt=Math.atan2(hz[0][1]-s.y,hz[0][0]-s.x);let d=Math.atan2(Math.sin(tgt-cur),Math.cos(tgt-cur));const na=cur+clamp(d,-s.home*dt,s.home*dt);s.vx=Math.cos(na)*sp;s.vy=Math.sin(na)*sp}
+    if(s.boom===1&&s.t>.52){s.boom=2;s.hitDone=false}
+    if(s.boom===2){const P=F.player,py=F.mode==='plat'?P.y-26:P.y,sp=Math.min(1100,Math.hypot(s.vx,s.vy)+1800*dt),a=Math.atan2(py-s.y,P.x-s.x);s.vx=Math.cos(a)*sp;s.vy=Math.sin(a)*sp;if(dist(s.x,s.y,P.x,py)<26)s.t=9}
+    if(s.orbT){const P=F.player,py=F.mode==='plat'?P.y-30:P.y;if(s.t<s.orbT){const a=s.orb+s.t*11;s.x=P.x+Math.cos(a)*36;s.y=py+Math.sin(a)*30}
+      else{const h=hz[0],a=h?Math.atan2(h[1]-s.y,h[0]-s.x):0;s.vx=Math.cos(a)*900;s.vy=Math.sin(a)*900;s.home=12;s.orbT=0}}
     s.vy+=s.g*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;let dead=s.t>s.life||s.x<-60||s.x>W+60||s.y<-200||s.y>H+60;
     if(F.mode==='plat'&&s.y>GROUND-s.r&&s.vy>0){if(s.bounce>0){s.vy=-s.vy*.62;s.bounce--;s.y=GROUND-s.r}else if(s.g){dead=true;splat(s.x,GROUND-4,'#2a2440',6)}else if(s.y>GROUND+10)dead=true}
     if(!dead&&!s.hitDone&&!b.dead){for(const [hx,hy,hr] of hz){if(dist(s.x,s.y,hx,hy)<hr+s.r){
@@ -2271,6 +2292,11 @@ function drawShots(c){
       case 'nib':c.beginPath();c.moveTo(10,0);c.lineTo(-6,-6);c.lineTo(-6,6);c.closePath();c.fillStyle=GOLD;c.fill();inkStroke(c,2);break;
       case 'bomb':c.rotate(s.t*8);ball(c,0,0,12,12,'#2a2440',4,2.5);c.fillStyle=GOLD;c.fillRect(-2,-16,4,6);break;
       case 'quill':ball(c,0,0,s.r,s.r*.7,'#fff3c0',2,2.5,.12);break;
+      case 'bolt':{c.beginPath();c.moveTo(10,0);for(let j=1;j<=4;j++)c.lineTo(10-j*11,(j%2?1:-1)*rand(3,7));c.lineCap='round';c.lineJoin='round';c.lineWidth=7;c.strokeStyle=INK;c.stroke();c.lineWidth=3.5;c.strokeStyle='#bfe8ff';c.stroke();ball(c,10,0,5,5,'#f2fbff',1,2);break}
+      case 'boomer':c.rotate(s.t*22);star(c,0,0,s.r,s.r*.35,4,0,2);c.fillStyle='#c8d0e0';c.fill();inkStroke(c,2.5);ball(c,0,0,4,4,RED,1,2);break;
+      case 'starshot':c.globalAlpha=.35;c.beginPath();c.moveTo(0,-4);c.lineTo(-34,0);c.lineTo(0,4);c.fillStyle='#f7d26a';c.fill();c.globalAlpha=1;c.rotate(s.t*9);star(c,0,0,s.r*1.15,s.r*.5,5,0,4);c.fillStyle=GOLD;c.fill();inkStroke(c,2.5);break;
+      case 'flame':{const k=Math.min(1,s.t/s.life);c.globalAlpha=1-k*.7;ball(c,0,0,s.r*(.5+k*.9),s.r*(.45+k*.8),k<.35?'#f7d26a':k<.7?'#f08a3a':'#c8402c',Math.floor(s.t*30)%5+1,k<.5?2:0,.18);c.globalAlpha=1;break}
+      case 'wisp':c.rotate(-Math.atan2(s.vy,s.vx));c.globalAlpha=.4;ball(c,-Math.cos(Math.atan2(s.vy,s.vx))*8,-Math.sin(Math.atan2(s.vy,s.vx))*8,8,8,'#8ae0d0',2,0);c.globalAlpha=1;ball(c,0,0,s.r,s.r,'#8ae0d0',3,2.5,.12);pieEye(c,-3,-2,2.5,3.5,1,0,1.2);pieEye(c,4,-2,2.5,3.5,1,0,1.2);break;
       case 'mega':c.rotate(s.t*14);star(c,0,0,s.r*1.2,s.r*.55,5,0,3);c.fillStyle=(Math.floor(s.t*20)%2)?'#f7d26a':PINK;c.fill();inkStroke(c,3);ball(c,0,0,s.r*.4,s.r*.4,'#fffbe8',2,0);break;
       case 'ex':c.rotate(s.t*10);ball(c,0,0,s.r,s.r,'#f7d26a',6,3.5,.12);ball(c,0,0,s.r*.55,s.r*.55,'#fffbe8',3,2,.1);break;
     }c.restore()}
@@ -2358,7 +2384,7 @@ class Fight{
           if(p.charge>=.8){pshot(mx,my,a,900,44,{kind:'quill',r:22,pierce:true,life:1.4});SFX.ex();this.shake=4}
           else pshot(mx,my,a,1000,3.2,{kind:'quill',r:7});
           SFX.shoot();p.charge=0}
-      }else if(firing&&p.shootCd<=0){p.shootCd=(wid==='mega'?.05:wid==='spread'?.13:wid==='homing'?.12:wid==='lobber'?.34:.085)*rateMul(wid);fireWeapon(p,wid,mx,my,Math.atan2(p.aimY,p.aimX))}
+      }else if(firing&&p.shootCd<=0){p.shootCd=(({mega:.05,spread:.13,homing:.12,lobber:.34,storm:.2,boomer:.32,starfall:.15,flamer:.04,wisp:.22})[wid]||.085)*rateMul(wid);fireWeapon(p,wid,mx,my,Math.atan2(p.aimY,p.aimX))}
     }
     if(inp.hit('ex')&&this.meter>=1&&p.exT<=0){this.meter-=1;this.stats.cards++;p.exT=.28;p.inv=Math.max(p.inv,.4);const a=Math.atan2(p.aimY,p.aimX);
       if(wid==='homing')for(let k=-1;k<=1;k++)pshot(mx,my,a+k*.6,560,12,{kind:'ex',r:14,home:6,pierce:true,life:2.5});
@@ -2611,7 +2637,9 @@ class Shop{
     const bx=12+(this.shake?Math.sin(t*80)*6:0);wrect(c,bx,16,380,58,3,2);c.fillStyle=CREAM;c.fill();inkStroke(c,3);wrapText(c,this.say,bx+16,34,350,20,15,INK);
     txt(c,"OL' SMUDGE'S SUPPLIES",210,474,18,'#f7d26a','center',FD);coinBadge(c,140,510);
     const lx=460;txt3d(c,'SHOP',lx+220,40,40,'#f7d26a',5);
-    SHOP_LIST.forEach((id,k)=>{const it=ITEMS[id],y=76+k*31,sel=k===this.i,own=save.owned.includes(id),up=own&&it.type==='w',L=lvl(id);
+    const VIS=11,top=clamp(this.i-5,0,SHOP_LIST.length-VIS);
+    if(top>0)txt(c,'▲ more',lx+450,62,11,'#d8c8a2','right',FB,false);if(top+VIS<SHOP_LIST.length)txt(c,'▼ more',lx+450,76+VIS*31-8,11,'#d8c8a2','right',FB,false);
+    SHOP_LIST.forEach((id,k)=>{if(k<top||k>=top+VIS)return;const it=ITEMS[id],y=76+(k-top)*31,sel=k===this.i,own=save.owned.includes(id),up=own&&it.type==='w',L=lvl(id);
       hot(lx-10,y-15,470,29,()=>{if(this.i===k)this.buy();else{this.i=k;SFX.menu()}});
       if(sel){wrect(c,lx-10,y-15,470,29,k,1.5);c.fillStyle='rgba(247,210,106,.28)';c.fill();inkStroke(c,2)}
       drawIcon(c,id,lx+14,y,.62);txt(c,it.name,lx+40,y+1,17,own&&!up?'#a89a80':CREAM,'left',FD,true,4);
