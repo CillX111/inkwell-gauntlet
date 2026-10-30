@@ -2167,7 +2167,7 @@ const BOSSES=[
   {id:'proj',world:2,name:'The Projectionist',tag:'The final reel. No refunds',mode:'air',stage:'cinema',par:320,phases:9,make:()=>new Proj(),drop:'goldnib',poster:'#2a1a24',final:true,endTag:'FINALE',lock:()=>!!save.clears.doll,why:'Beat Mama Matryoshka',
     art:(c,x,y,s,t)=>drawProj(c,x+22*s,y+36*s,s*.36,{t,lx:-1,ly:0})},
   {id:'wyrm',world:3,name:'Wriggles the Sky Wyrm',tag:'Longer than your patience',mode:'air',stage:'stormsky',par:190,phases:6,make:()=>new Wyrm(),drop:'spring',poster:'#2f5a52',lock:()=>w2Done(),why:'Beat World 2',
-    art:(c,x,y,s,t)=>{for(let i=9;i>=1;i--){const a=i*.55+t;drawWyrmSeg(c,x+Math.cos(a)*60*s,y+40*s+Math.sin(a)*40*s-i*4*s,(20-i)*s,i,false)}drawWyrmHead(c,x+10*s,y-30*s,Math.PI,{t,sc:s})}},
+    art:(c,x,y,s,t)=>{const P=u=>[x+Math.cos(u)*52*s,y+16*s+Math.sin(u*2)*30*s],u0=t*1.2;for(let i=9;i>=1;i--){const [sx,sy]=P(u0-i*.32);drawWyrmSeg(c,sx,sy,(20-i)*s,i,false)}const [hx,hy]=P(u0),[nx,ny]=P(u0+.05);drawWyrmHead(c,hx,hy,Math.atan2(ny-hy,nx-hx),{t,sc:s*.62})}},
   {id:'angler',world:3,name:'Lanterna the Deep',tag:'Follow the pretty light',mode:'air',stage:'abyss',par:200,phases:6,make:()=>new Angler(),drop:'homing',poster:'#14304a',lock:()=>!!save.clears.wyrm,why:'Beat the Sky Wyrm',
     art:(c,x,y,s,t)=>drawAngler(c,x+20*s,y+40*s,s*.42,{t,lx:-1,ly:0})},
   {id:'cog',world:3,name:'The Cogitator',tag:'Think fast. It already did',mode:'air',stage:'machine',par:215,phases:7,make:()=>new Cog(),drop:'charge',poster:'#4a4652',lock:()=>!!save.clears.angler,why:'Beat Lanterna',
@@ -2555,7 +2555,7 @@ class MapScene{
     txt(c,'Pick a fight',36,44,16,w2?CREAM:INK,'left',FB,false);
     {const up=this.world>1?'Scroll up for World '+(this.world-1):'',dn=this.world===1&&save.w2&&w1Done()?'Scroll down for World 2':this.world===2&&save.w3&&w2Done()?'Scroll down for World 3':'';const sl=[up,dn].filter(Boolean).join('   ·   ');if(sl)txt(c,sl,W/2,76,12,w2?'#e9d6ad':'#6a4a30','center',FB,false)}
     c.save();c.translate(this.nudge>0?Math.sin(t*70)*this.nudge*16:0,this.swipe*360);
-    const N=L.length,gap=8,w=Math.min(140,(W-40-(N-1)*gap)/N),h=228,sc=w/140,x0=(W-N*w-(N-1)*gap)/2;
+    const N=L.length,gap=8,w=Math.min(140,(W-60-(N-1)*gap)/N),h=228,sc=w/140,x0=(W-N*w-(N-1)*gap)/2;
     L.forEach((gi,i)=>{const b=BOSSES[gi],sel=this.row===0&&this.i===i,x=x0+i*(w+gap),y=86,open=unlocked(gi),cl=save.clears[b.id];
       hot(x,y,w,h,()=>{this.row=0;this.i=i;this.act()},()=>{this.row=0;this.i=i});
       c.save();c.translate(x+w/2,y+h/2);c.rotate((i-(N-1)/2)*.022+(sel?Math.sin(t*3)*.015:0));if(sel){c.translate(0,-10);c.scale(1.07,1.07)}
@@ -2642,8 +2642,8 @@ class Equip{
       c.save();c.translate(W/2,y+40);if(sel)c.scale(1.03,1.03);
       c.fillStyle='rgba(28,19,12,.3)';wrect(c,-330+6,-42+7,660,84,i+3,2);c.fill();wrect(c,-330,-42,660,84,i+3,2);shade(c,0,0,330,42,sel?'#f6e3a8':CREAM);inkStroke(c,sel?4:3);
       txt(c,lab,-310,-22,15,'#6a4a30','left',FB,false);
-      if(id)drawIcon(c,id,-260,10,1);txt(c,id?ITEMS[id].name+(ITEMS[id].type==='w'&&id!=='mega'?'  Lv '+lvl(id):''):'Empty',-220,6,24,INK,'left',FD,false);
-      if(id)wrapText(c,ITEMS[id].desc,-220,30,360,16,13,'#5a4030');
+      if(id)drawIcon(c,id,-260,10,1);txt(c,id?ITEMS[id].name+(ITEMS[id].type==='w'&&id!=='mega'?'  Lv '+lvl(id):''):'Empty',-220,id?-4:6,24,INK,'left',FD,false);
+      if(id)wrapText(c,ITEMS[id].desc,-220,18,420,15,13,'#5a4030');
       txt(c,(o.length>1?'◀ ':'')+(o.indexOf(id)+1)+' / '+o.length+(o.length>1?' ▶':''),310,6,16,RED,'right',FD,false);
       c.restore()});
     txt(c,'Click a slot or use left/right to change it  ·  Jump: done',W/2,H-30,15,INK,'center',FB,false);
