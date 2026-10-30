@@ -69,7 +69,7 @@ let BOIL=0, CLOCK=0, RS=1;
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const colCache={};
-function rgb(h){return colCache[h]||(colCache[h]=h[0]==='#'?[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]:h.match(/\d+/g).slice(0,3).map(Number))}
+function rgb(h){if(h[0]==='#'&&h.length===4)h='#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];return colCache[h]||(colCache[h]=h[0]==='#'?[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]:h.match(/\d+/g).slice(0,3).map(Number))}
 function tint(h,a){const [r,g,b]=rgb(h),t=a>0?255:0,k=Math.abs(a);return `rgb(${Math.round(r+(t-r)*k)},${Math.round(g+(t-g)*k)},${Math.round(b+(t-b)*k)})`}
 
 function resize(){
@@ -356,12 +356,39 @@ function noiz(dur,vol=.2,freq=2000,dest,at,type='bandpass'){
 const lastS={};function rl(k,gap){const n=performance.now();if(lastS[k]&&n-lastS[k]<gap)return false;lastS[k]=n;return true}
 const SFX={
   shoot(){if(rl('sh',70))tone(rand(820,900),.035,'square',.025,.5)},
+  shot(id){const c=AU.ctx;if(!c)return;const t=c.currentTime;
+    switch(id){
+      case 'pencil':if(rl('sh',75)){tone(rand(1150,1300),.045,'triangle',.05,.45);noiz(.025,.03,5000,null,null,'highpass')}break;
+      case 'spread':if(rl('sh',110)){noiz(.09,.09,900);tone(rand(260,300),.07,'sine',.08,.5)}break;
+      case 'homing':if(rl('sh',100))tone(rand(640,720),.1,'sine',.045,1.9);break;
+      case 'lobber':tone(170,.2,'sine',.2,.4);noiz(.12,.1,380,null,null,'lowpass');break;
+      case 'charge':if(rl('sh',75))tone(rand(980,1060),.05,'triangle',.05,.5);break;
+      case 'storm':if(rl('sh',120)){noiz(.08,.09,3200,null,null,'highpass');tone(rand(1700,1900),.08,'sawtooth',.03,.25);tone(90,.06,'square',.04,.6)}break;
+      case 'boomer':noiz(.16,.07,1500);tone(420,.16,'triangle',.05,1.7);break;
+      case 'starfall':if(rl('sh',110)){const f=[1568,1760,2093,2349][Math.floor(Math.random()*4)];tone(f,.14,'triangle',.04);tone(f*1.5,.1,'sine',.02,1,null,t+.03)}break;
+      case 'flamer':if(rl('sh',65))noiz(.11,.07,rand(700,1000),null,null,'lowpass');break;
+      case 'wisp':if(rl('sh',150)){tone(520,.18,'sine',.04,1.35);tone(780,.16,'sine',.025,1.3,null,t+.02)}break;
+      case 'mega':if(rl('sh',60)){tone(rand(1300,1500),.05,'square',.03,1.6);noiz(.03,.03,4000,null,null,'highpass')}break;
+      default:SFX.shoot()}},
+  ex(id){const c=AU.ctx;if(!c)return;const t=c.currentTime;
+    noiz(.45,.32,520,null,null,'lowpass');tone(150,.45,'square',.1,.35);tone(70,.55,'sine',.3,.5);
+    [523,659,784,1047].forEach((f,i)=>tone(f,.22,'triangle',.07,1,null,t+.05+i*.045));
+    switch(id){
+      case 'storm':noiz(.6,.25,2600,null,null,'highpass');tone(1900,.35,'sawtooth',.06,.2);noiz(.9,.2,180,null,t+.12,'lowpass');break;
+      case 'flamer':noiz(.8,.25,800,null,null,'lowpass');tone(110,.7,'sawtooth',.07,.6);break;
+      case 'starfall':for(let i=0;i<6;i++)tone(2093-i*130,.25,'triangle',.05,1,null,t+.1+i*.06);break;
+      case 'wisp':tone(392,.7,'sine',.07,1.5);tone(588,.7,'sine',.05,1.5,null,t+.05);tone(784,.7,'sine',.04,1.5,null,t+.1);break;
+      case 'boomer':noiz(.4,.15,1600);tone(300,.4,'triangle',.07,2.4);break;
+      case 'lobber':tone(55,.8,'sine',.3,.5);noiz(.7,.25,250,null,t+.05,'lowpass');break;
+      case 'homing':for(let i=0;i<3;i++)tone(600+i*120,.2,'sine',.06,2,null,t+i*.05);break;
+      case 'spread':noiz(.25,.25,1100);break;
+      case 'quill':tone(880,.5,'sawtooth',.06,.25);noiz(.5,.2,2200,null,null,'highpass');break;
+    }},
   hit(){if(rl('hit',60))noiz(.05,.08,900)},
   jump(){tone(330,.12,'triangle',.12,2.2)},
   dash(){noiz(.16,.18,1400,null,null,'highpass')},
   parry(){tone(1318,.25,'triangle',.18);tone(1976,.3,'triangle',.12,1,null,AU.ctx&&AU.ctx.currentTime+.05)},
   hurt(){tone(420,.35,'sawtooth',.16,.35);noiz(.2,.2,600)},
-  ex(){noiz(.35,.3,500,null,null,'lowpass');tone(160,.4,'square',.12,.4)},
   thud(){tone(110,.25,'sine',.35,.4);noiz(.15,.15,300,null,null,'lowpass')},
   zap(){noiz(.3,.18,3000,null,null,'highpass');tone(1600,.2,'sawtooth',.06,.3)},
   coin(){tone(988,.08,'square',.08);tone(1318,.2,'square',.08,1,null,AU.ctx&&AU.ctx.currentTime+.08)},
@@ -2266,7 +2293,7 @@ function fireWeapon(p,id,mx,my,a){
     case 'wisp':pshot(mx,my,a,0,10,{kind:'wisp',r:10,life:2.6,orb:rand(0,TAU),orbT:.4});break;
     case 'lobber':{const s=air?520:560;F.shots.push({x:mx,y:my,vx:Math.cos(a)*s,vy:Math.sin(a)*s-(air?160:300),g:air?900:1500,bounce:air?0:1,dmg:11.5*(has('goldnib')?1.2:1)*dmgMul('lobber'),r:12,kind:'bomb',life:2.4,t:0,home:0,pierce:false});break}
   }
-  SFX.shoot();
+  SFX.shot(id);
 }
 function updateShots(dt){
   const b=F.boss,hz=b.hurt();
@@ -2381,16 +2408,16 @@ class Fight{
         if(firing&&!(save.settings.autofire&&p.charge>=.8&&!inp.held('shoot'))){p.charge+=dt/rateMul('charge')}
         if((!firing&&p.charge>0)||(save.settings.autofire&&!inp.held('shoot')&&p.charge>=.8)){
           const a=Math.atan2(p.aimY,p.aimX);
-          if(p.charge>=.8){pshot(mx,my,a,900,44,{kind:'quill',r:22,pierce:true,life:1.4});SFX.ex();this.shake=4}
+          if(p.charge>=.8){pshot(mx,my,a,900,44,{kind:'quill',r:22,pierce:true,life:1.4});SFX.ex('quill');this.shake=4}
           else pshot(mx,my,a,1000,3.2,{kind:'quill',r:7});
-          SFX.shoot();p.charge=0}
+          if(p.charge<.8)SFX.shot('charge');p.charge=0}
       }else if(firing&&p.shootCd<=0){p.shootCd=(({mega:.05,spread:.13,homing:.12,lobber:.34,storm:.2,boomer:.32,starfall:.15,flamer:.04,wisp:.22})[wid]||.085)*rateMul(wid);fireWeapon(p,wid,mx,my,Math.atan2(p.aimY,p.aimX))}
     }
     if(inp.hit('ex')&&this.meter>=1&&p.exT<=0){this.meter-=1;this.stats.cards++;p.exT=.28;p.inv=Math.max(p.inv,.4);const a=Math.atan2(p.aimY,p.aimX);
       if(wid==='homing')for(let k=-1;k<=1;k++)pshot(mx,my,a+k*.6,560,12,{kind:'ex',r:14,home:6,pierce:true,life:2.5});
       else if(wid==='spread')for(let k=-3;k<=3;k++)pshot(mx,my,a+k*.12,700,6,{kind:'ex',r:12,life:.5});
       else pshot(mx,my,a,760,34,{kind:'ex',r:26,pierce:true,life:1.8});
-      SFX.ex();this.shake=6;sparks(mx,my,GOLD,10)}
+      SFX.ex(wid);this.shake=6;sparks(mx,my,GOLD,10)}
   }
   muzzle(){const p=this.player;if(this.mode==='air')return[p.x+(p.shrink?26:42),p.y+2];const by=p.y-(p.duck?18:28)-4;return[p.x+p.face*7+p.aimX*30,by+p.aimY*30]}
   collide(){
