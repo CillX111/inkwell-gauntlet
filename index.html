@@ -1,4 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>Inkwell Gauntlet</title>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#1c130c">
+<title>Inkwell Gauntlet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -605,10 +607,10 @@ function hzRock(spd,big){const R=big?30:22;
 }
 function hzCactus(spd){
   return{x:W+60,t:0,update(dt){this.t+=dt;this.x-=spd*dt;if(this.x<-80)this.dead=true},
-    hit(cx,cy,r){return Math.abs(cx-this.x)<15+r*.5&&cy+r*.7>GROUND-82},
+    hit(cx,cy,r){return Math.abs(cx-this.x)<15+r*.5&&cy+r*.7>GROUND-82},pinkPt(){return this.pinkGone?null:[this.x,GROUND-100]},
     draw(c){const x=this.x;hose(c,x-10,GROUND-50,x-32,GROUND-76,.4,11,'#5a8a3a');hose(c,x+10,GROUND-62,x+30,GROUND-86,-.4,11,'#5a8a3a');
       wrect(c,x-14,GROUND-96,28,98,3,1);shade(c,x,GROUND-48,14,48,'#5a8a3a');inkStroke(c,3);
-      c.strokeStyle='rgba(28,19,12,.4)';c.lineWidth=1.5;c.beginPath();c.moveTo(x,GROUND-90);c.lineTo(x,GROUND-6);c.stroke();ball(c,x,GROUND-100,7,6,PINK,3,2)}};
+      c.strokeStyle='rgba(28,19,12,.4)';c.lineWidth=1.5;c.beginPath();c.moveTo(x,GROUND-90);c.lineTo(x,GROUND-6);c.stroke();if(!this.pinkGone)ball(c,x,GROUND-100,9,6,PINK,3,2)}};
 }
 function hzGoo(x,w,life,col,vx=0){
   return{x,t:0,update(dt){this.t+=dt;this.x-=vx*dt;if(this.t>life)this.dead=true},
@@ -1463,7 +1465,7 @@ class Smudge extends Boss{
   mpt(){const h=this.hurt()[0];return[h[0]-18,h[1]+63]}
   laugh(){SFX.laugh();this.mouth=1.4}
   drip(x,pink){fire2(x,-20,0,rand(240,300),{kind:'drop',col:'#1c1830',r:9,groundDie:true,pink,splash:b=>F.hazards.push(hzPuddle(b.cx,26,2.0))})}
-  fake(x,y,a,s){fire(x,y,a,s,{kind:'fake',col:PINK,r:12})}
+  fake(x,y,a,s){fire(x,y,a,s,{kind:'fake',col:'#7a3a8a',r:12})}
   blots(n,spread,spd){const [mx,my]=this.mpt();fan(mx,my,angTo(mx,my),n,spread,spd,{kind:'blot',col:'#1c1830',r:11})}
   splatScreen(n){for(let i=0;i<n;i++)this.blinds.push({x:rand(90,870),y:rand(90,450),r:rand(70,115),t:0,life:rand(2.2,3),seed:rand(0,99)});SFX.splat()}
   *pDrops(){for(let n=0;;n++){
@@ -1617,7 +1619,7 @@ class Wax extends Boss{
   drawOver(c){if(this.dark<=0)return;const a=Math.min(1,this.dark*2)*.93,[px,py]=aimPt(),[fx,fy]=this.fpt(),D=`rgba(10,6,8,${a})`;
     c.save();c.beginPath();c.rect(0,0,W,H);c.moveTo(px+150,py);c.arc(px,py,150,0,TAU);c.moveTo(fx+200,fy);c.arc(fx,fy,200,0,TAU);c.fillStyle=D;c.fill('evenodd');
     for(const [x,y,R] of [[px,py,150],[fx,fy,200]]){const g=c.createRadialGradient(x,y,R*.55,x,y,R);g.addColorStop(0,'rgba(10,6,8,0)');g.addColorStop(1,D);c.fillStyle=g;c.beginPath();c.arc(x,y,R,0,TAU);c.fill()}
-    c.globalAlpha=.7;c.fillStyle='#f7a040';for(const b of F.bullets){c.beginPath();c.arc(b.cx,b.cy,3.5,0,TAU);c.fill()}c.restore()}
+    for(const b of F.bullets){c.globalAlpha=b.pink?.95:.7;c.fillStyle=b.pink?PINK:'#f7a040';c.beginPath();c.arc(b.cx,b.cy,b.pink?7:3.5,0,TAU);c.fill()}c.restore()}
 }
 
 class Gramo extends Boss{
@@ -2288,7 +2290,7 @@ class Fight{
   update(dt){
     if(this.paused){this.updatePause();return}
     if(inp.hit('pause')&&(this.state==='fight'||this.state==='intro')){this.paused=true;this.menu.i=0;SFX.menu();if(++this.stats.pause===5)egg('snack');return}
-    if(this.hitstop>0){this.hitstop-=dt;return}
+    if(this.hitstop>0){this.hitstop-=dt;if(inp.hit('jump'))this.jbuf=.15;return}
     dt*=this.slow;this.t+=dt;this.stateT+=dt;this.shake=Math.max(0,this.shake-dt*30);
     const p=this.player;
     if(this.state==='intro'){this.boss.update(dt);this.updateParts(dt);if(this.stateT>1.9){this.state='fight';this.stateT=0;this.boss.start()}this.playerIdle(dt);return}
@@ -2318,6 +2320,7 @@ class Fight{
   pauseItems(){return[{id:'resume',t:'Resume'},{id:'retry',t:'Retry'},{id:'quit',t:'Quit to map'},{id:'sound',t:'Sound: '+(save.settings.sound?'On':'Off')},{id:'auto',t:'Auto-fire: '+(save.settings.autofire?'On':'Off')}]}
   playerIdle(dt){const p=this.player;p.anim+=dt;if(this.mode==='plat'){p.vy+=2300*dt;p.y=Math.min(GROUND,p.y+p.vy*dt);if(p.y>=GROUND){p.vy=0;p.onGround=true}}}
   updatePlayer(dt){
+    const J=inp.hit('jump')||this.jbuf>0;this.jbuf=0;
     const p=this.player,rev=this.boss.reverse>0,L=inp.held(rev?'right':'left'),R=inp.held(rev?'left':'right'),U=inp.held('up'),D=inp.held('down'),lock=inp.held('lock');
     if(L||R||U||D||inp.held('jump')||inp.held('shoot')||inp.held('dash')||inp.held('ex'))this.idleT=0;else if((this.idleT+=dt)>10)egg('potato');
     p.anim+=dt;p.inv=Math.max(0,p.inv-dt);p.dashIF=Math.max(0,p.dashIF-dt);p.dashCd-=dt;p.parryWin-=dt;p.shootCd-=dt;
@@ -2328,12 +2331,12 @@ class Fight{
       if(inp.hit('dash')&&p.dashCd<=0&&p.exT<=0&&(p.onGround||p.airDash)){p.dashT=.22;p.dashIF=.23;p.dashDir=((R?1:0)-(L?1:0))||p.face;p.dashCd=.48;if(!p.onGround)p.airDash=false;p.vy=0;p.duck=false;SFX.dash();dust(p.x,p.y,3);if(++this.stats.dash===20)egg('zoom')}
       if(p.dashT>0){p.dashT-=dt;p.vx=(p.dashDir||p.face)*640;p.vy=0}
       else if(p.exT<=0){let mv=(R?1:0)-(L?1:0);if(lock||p.duck)mv=0;p.vx=mv*270;p.vy+=2300*dt;if(!inp.held('jump')&&p.vy<-280)p.vy+=2300*dt*1.6}
-      if(inp.hit('jump')&&p.exT<=0){if(p.onGround&&!p.duck){p.vy=-780;p.onGround=false;SFX.jump();if(++this.stats.jump===40)egg('bunny');dust(p.x,p.y,2)}
-        else if(!p.onGround){p.parryWin=has('ribbon')?.34:.2;if(p.dbl>0){p.dbl--;p.vy=-660;SFX.jump();dust(p.x,p.y,2)}}}
+      if(J&&p.exT<=0){if(p.onGround&&!p.duck){p.vy=-780;p.onGround=false;p.parryWin=has('ribbon')?.3:.18;SFX.jump();if(++this.stats.jump===40)egg('bunny');dust(p.x,p.y,2)}
+        else if(!p.onGround){p.parryWin=9;if(p.dbl>0){p.dbl--;p.vy=-660;SFX.jump();dust(p.x,p.y,2)}}}
       const py0=p.y;p.x+=p.vx*dt;p.y+=p.vy*dt;const [w0,w1]=this.def.wall;p.x=clamp(p.x,w0,w1);p.dropT=Math.max(0,(p.dropT||0)-dt);p.onPlat=false;
-      if(p.y>=GROUND){if(!p.onGround)dust(p.x,GROUND,2);p.y=GROUND;p.vy=0;p.onGround=true;p.airDash=true;p.dbl=has('spring')?2:1}
+      if(p.y>=GROUND){if(!p.onGround){dust(p.x,GROUND,2);p.parryWin=0}p.y=GROUND;p.vy=0;p.onGround=true;p.airDash=true;p.dbl=has('spring')?2:1}
       else{let land=null;if(p.vy>=0&&p.dropT<=0)for(const q of this.plats)if(p.x>q.x1-6&&p.x<q.x2+6&&py0<=q.y+1&&p.y>=q.y){land=q;break}
-        if(land){if(!p.onGround)dust(p.x,land.y,2);p.y=land.y;p.vy=0;p.onGround=true;p.onPlat=true;p.airDash=true;p.dbl=has('spring')?2:1}else p.onGround=false}
+        if(land){if(!p.onGround){dust(p.x,land.y,2);p.parryWin=0}p.y=land.y;p.vy=0;p.onGround=true;p.onPlat=true;p.airDash=true;p.dbl=has('spring')?2:1}else p.onGround=false}
       p.face=1;
       const bh=this.boss.hurt()[0],sx=p.x+7,sy=p.y-(p.duck?18:28)-4;
       let ax=1,ay=0;if(bh){ax=bh[0]-sx;ay=bh[1]-sy}
@@ -2342,7 +2345,7 @@ class Fight{
       p.shrink=inp.held('dash');const sp=(p.shrink?210:330)*(has('spring')?1.2:1);
       let mx=(R?1:0)-(L?1:0),my=(D?1:0)-(U?1:0);const n=Math.hypot(mx,my)||1;p.vx=mx/n*sp;p.vy=my/n*sp;
       p.x=clamp(p.x+p.vx*dt,24,640);p.y=clamp(p.y+p.vy*dt,24,H-24);p.face=1;p.aimX=1;p.aimY=0;
-      if(inp.hit('jump'))p.parryWin=has('ribbon')?.34:.2;
+      if(J)p.parryWin=has('ribbon')?.55:.38;
     }
     if(inp.hit('swap')&&p.weapons.length>1){p.wi=1-p.wi;p.charge=0;popText(p.x,p.y-80,ITEMS[p.weapons[p.wi]].name);SFX.menu()}
     const wid=p.weapons[p.wi],firing=inp.held('shoot')||save.settings.autofire;
@@ -2368,16 +2371,18 @@ class Fight{
     const p=this.player;if(p.dead)return;
     const air=this.mode==='air',[cx,cy]=air?[p.x,p.y]:[p.x,p.y-(p.duck?14:26)],r=air?(p.shrink?3:4.5):(p.duck?9:12);
     for(let i=this.bullets.length-1;i>=0;i--){const b=this.bullets[i];
-      if(b.pink&&p.parryWin>0&&(air||!p.onGround)&&dist(cx,cy,b.cx,b.cy)<b.r+r+26){this.parry(i);continue}
+      if(b.pink&&p.parryWin>0&&(air||!p.onGround)&&dist(cx,cy,b.cx,b.cy)<b.r+r+34){this.parry(i);continue}
       if(dist(cx,cy,b.cx,b.cy)<b.r*.62+r){
         if(p.dashIF>0&&p.inv<=0&&!b.dodged){b.dodged=1;if(this.t-this.lastDodge>1.2){popText(p.x,p.y-80,quip('dodge'),GOLD);this.lastDodge=this.t}egg('ghost')}
         if(b.pink&&has('ribbon')&&!p.ribbonUsed){p.ribbonUsed=true;this.parry(i);continue}
         this.hurtPlayer();if(!b.kind.match(/hand|puff/)){this.bullets[i]=this.bullets[this.bullets.length-1];this.bullets.pop()}break}
     }
+    if(p.parryWin>0&&(air||!p.onGround))for(const h of this.hazards){const q=h.pinkPt&&h.pinkPt();if(q&&dist(cx,cy,q[0],q[1])<r+40){h.pinkGone=1;this.parryAt(q[0],q[1]);break}}
     for(const h of this.hazards)if(h.hit(cx,cy,r)){this.hurtPlayer();break}
     if(this.boss.contact(cx,cy,r-12))this.hurtPlayer();
   }
-  parry(i){const b=this.bullets[i],p=this.player;this.bullets[i]=this.bullets[this.bullets.length-1];this.bullets.pop();
+  parry(i){const b=this.bullets[i];this.bullets[i]=this.bullets[this.bullets.length-1];this.bullets.pop();this.parryAt(b.cx,b.cy)}
+  parryAt(bx,by){const p=this.player,b={cx:bx,cy:by};
     this.meter=Math.min(5,this.meter+1);if(++this.stats.parries===5)egg('pink');p.parryWin=0;p.airDash=true;p.dbl=has('spring')?2:1;if(this.mode==='plat')p.vy=-640;
     this.hitstop=.09;sparks(b.cx,b.cy,PINK,12);popText(b.cx,b.cy-24,'PARRY!',PINK);SFX.parry()}
   hurtPlayer(){const p=this.player;if(p.inv>0||p.dead||p.exT>0||p.dashIF>0)return;if(p.dashT>0&&has('smoke'))return;
@@ -2513,7 +2518,7 @@ class Help{
   draw(c){hot(0,0,W,H,()=>{SFX.pick();go(new Title())});paperBg(c);txt3d(c,'HOW TO PLAY',W/2,52,46,RED,5);
     const rows=[['Move  (on a platform: down drops through)','Arrows / WASD'],['Jump  (again in mid-air: double jump + parry)','Z / Space / J'],['Shoot (hold)','X / K'],['Dash  (brief invincibility; plane: hold to shrink)','C / L / Left Shift'],['EX shot (needs a full card)','V / I'],['Plant feet (stand still while shooting)','F / Q'],['Swap weapon','E / Tab'],['Pause','Esc / P']];
     rows.forEach(([a,b],i)=>{const y=110+i*34;txt(c,a,90,y,17,INK,'left',FB,false);txt(c,b,560,y,17,RED,'left',FD,false);c.beginPath();c.moveTo(90,y+16);c.lineTo(870,y+16);c.strokeStyle='rgba(28,19,12,.2)';c.lineWidth=1;c.stroke()});
-    wrapText(c,'Your shots aim at the boss by themselves. Pink things can be parried: jump into them and press jump again. Each parry fills a whole super card. Beat bosses to earn coins, spend them in the shop, and set your loadout under Equip. Gamepads work too.',90,402,780,24,16,INK);
+    wrapText(c,'Your shots aim at the boss by themselves. Pink things can be parried: jump into them, or press jump again in mid-air (it stays ready until you land). Each parry fills a whole super card. Beat bosses to earn coins, spend them in the shop, and set your loadout under Equip. Gamepads work too.',90,402,780,24,16,INK);
     txt(c,'Easter eggs found: '+eggCount()+' / '+Object.keys(EGGS).length+'   (psst... try poking Dot on the title screen)',W/2,H-52,14,'#8a3a20','center',FB,false);
     txt(c,'Press jump or click to go back',W/2,H-24,16,'#6a4a30','center',FB,false)}
 }
@@ -2731,4 +2736,5 @@ if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load(`20px $
 cv.focus();
 })();
 </script>
+
 </body></html>
